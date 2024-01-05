@@ -10,6 +10,7 @@ function routing, not only (REST) APIs.
 
 ## Tested routers & frameworks
 
+- [aero](https://github.com/aerogo/aero)
 * [Beego](http://beego.me/)
 * [go-json-rest](https://github.com/ant0ine/go-json-rest)
 * [Denco](https://github.com/naoina/denco)
