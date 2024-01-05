@@ -1,98 +1,141 @@
-Go HTTP Router Benchmark
-========================
+# Go HTTP Router Benchmark
 
-This benchmark suite aims to compare the performance of HTTP request routers for [Go](https://golang.org) by implementing the routing structure of some real world APIs.
-Some of the APIs are slightly adapted, since they can not be implemented 1:1 in some of the routers.
+This benchmark suite aims to compare the performance of HTTP request routers for
+[Go](https://golang.org) by implementing the routing structure of some real
+world APIs. Some of the APIs are slightly adapted, since they can not be
+implemented 1:1 in some of the routers.
 
-Of course the tested routers can be used for any kind of HTTP request → handler function routing, not only (REST) APIs.
+Of course the tested routers can be used for any kind of HTTP request → handler
+function routing, not only (REST) APIs.
 
+## Tested routers & frameworks
 
-#### Tested routers & frameworks:
-
- * [Beego](http://beego.me/)
- * [go-json-rest](https://github.com/ant0ine/go-json-rest)
- * [Denco](https://github.com/naoina/denco)
- * [Gocraft Web](https://github.com/gocraft/web)
- * [Goji](https://github.com/zenazn/goji/)
- * [Gorilla Mux](http://www.gorillatoolkit.org/pkg/mux)
- * [http.ServeMux](http://golang.org/pkg/net/http/#ServeMux)
- * [HttpRouter](https://github.com/julienschmidt/httprouter)
- * [HttpTreeMux](https://github.com/dimfeld/httptreemux)
- * [Kocha-urlrouter](https://github.com/naoina/kocha-urlrouter)
- * [Martini](https://github.com/go-martini/martini)
- * [Pat](https://github.com/bmizerany/pat)
- * [Possum](https://github.com/mikespook/possum)
- * [R2router](https://github.com/vanng822/r2router)
- * [TigerTonic](https://github.com/rcrowley/go-tigertonic)
- * [Traffic](https://github.com/pilu/traffic)
-
+* [Beego](http://beego.me/)
+* [go-json-rest](https://github.com/ant0ine/go-json-rest)
+* [Denco](https://github.com/naoina/denco)
+* [Gocraft Web](https://github.com/gocraft/web)
+* [Goji](https://github.com/zenazn/goji/)
+* [Gorilla Mux](http://www.gorillatoolkit.org/pkg/mux)
+* [http.ServeMux](http://golang.org/pkg/net/http/#ServeMux)
+* [HttpRouter](https://github.com/julienschmidt/httprouter)
+* [HttpTreeMux](https://github.com/dimfeld/httptreemux)
+* [Kocha-urlrouter](https://github.com/naoina/kocha-urlrouter)
+* [Martini](https://github.com/go-martini/martini)
+* [Pat](https://github.com/bmizerany/pat)
+* [Possum](https://github.com/mikespook/possum)
+* [R2router](https://github.com/vanng822/r2router)
+* [TigerTonic](https://github.com/rcrowley/go-tigertonic)
+* [Traffic](https://github.com/pilu/traffic)
 
 ## Motivation
 
-Go is a great language for web applications. Since the [default *request multiplexer*](http://golang.org/pkg/net/http/#ServeMux) of Go's net/http package is very simple and limited, an accordingly high number of HTTP request routers exist.
+Go is a great language for web applications. Since the [default *request
+multiplexer*](http://golang.org/pkg/net/http/#ServeMux) of Go's net/http package
+is very simple and limited, an accordingly high number of HTTP request routers
+exist.
 
-Unfortunately, most of the (early) routers use pretty bad routing algorithms. Moreover, many of them are very wasteful with memory allocations, which can become a problem in a language with Garbage Collection like Go, since every (heap) allocation results in more work for the Garbage Collector.
+Unfortunately, most of the (early) routers use pretty bad routing algorithms.
+Moreover, many of them are very wasteful with memory allocations, which can
+become a problem in a language with Garbage Collection like Go, since every
+(heap) allocation results in more work for the Garbage Collector.
 
-Lately more and more bloated frameworks pop up, outdoing one another in the number of features. This benchmark tries to measure their overhead.
+Lately more and more bloated frameworks pop up, outdoing one another in the
+number of features. This benchmark tries to measure their overhead.
 
-Be aware that we are comparing apples and oranges here. We compare feature-rich frameworks to packages with simple routing functionality only. But since we are only interested in decent request routing, I think this is not entirely unfair. The frameworks are configured to do as little additional work as possible.
+Be aware that we are comparing apples and oranges here. We compare feature-rich
+frameworks to packages with simple routing functionality only. But since we are
+only interested in decent request routing, I think this is not entirely unfair.
+The frameworks are configured to do as little additional work as possible.
 
-If you care about performance, this benchmark can maybe help you find the right router, which scales with your application.
+If you care about performance, this benchmark can maybe help you find the right
+router, which scales with your application.
 
-Personally, I prefer slim and optimized software, which is why I implemented [HttpRouter](https://github.com/julienschmidt/httprouter), which is also tested here. In fact, this benchmark suite started as part of the packages tests, but was then extended to a generic benchmark suite.
+Personally, I prefer slim and optimized software, which is why I implemented
+[HttpRouter](https://github.com/julienschmidt/httprouter), which is also tested
+here. In fact, this benchmark suite started as part of the packages tests, but
+was then extended to a generic benchmark suite.
+
 So keep in mind, that I am not completely unbiased :relieved:
-
 
 ## Results
 
 Benchmark System:
- * Intel Core i5-2500K (4x 3,30GHz + Turbo Boost), CPU-governor: performance
- * 2x 4 GiB DDR3-1333 RAM, dual-channel
- * go version go1.3rc1 linux/amd64
- * Ubuntu 14.04 amd64 (Linux Kernel 3.13.0-29), fresh installation
 
+* Intel Core i5-2500K (4x 3,30GHz + Turbo Boost), CPU-governor: performance
+* 2x 4 GiB DDR3-1333 RAM, dual-channel
+* go version go1.3rc1 linux/amd64
+* Ubuntu 14.04 amd64 (Linux Kernel 3.13.0-29), fresh installation
 
 ### Memory Consumption
 
-Besides the micro-benchmarks, there are 3 sets of benchmarks where we play around with clones of some real-world APIs, and one benchmark with static routes only, to allow a comparison with [http.ServeMux](http://golang.org/pkg/net/http/#ServeMux).
-The following table shows the memory required only for loading the routing structure for the respective API.
-The best 3 values for each test are bold. I'm pretty sure you can detect a pattern :wink:
+Besides the micro-benchmarks, there are 3 sets of benchmarks where we play
+around with clones of some real-world APIs, and one benchmark with static routes
+only, to allow a comparison with
+[http.ServeMux](http://golang.org/pkg/net/http/#ServeMux). The following table
+shows the memory required only for loading the routing structure for the
+respective API. The best 3 values for each test are bold. I'm pretty sure you
+can detect a pattern :wink:
 
-| Router       | Static    | GitHub     | Google+   | Parse     |
-|:-------------|----------:|-----------:|----------:|----------:|
-| HttpServeMux |__18064 B__|         -  |        -  |        -  |
-| Beego        |  79472 B  |  497248 B  |  26480 B  |  38768 B  |
-| Denco        |  44752 B  |  107632 B  |  54896 B  |  36368 B  |
-| Gocraft Web  |  57976 B  |   95736 B  |   8024 B  |  13120 B  |
-| Goji         |  32400 B  | __58424 B__| __3392 B__| __6704 B__|
-| Go-Json-Rest | 152608 B  |  148352 B  |  11696 B  |  13712 B  |
-| Gorilla Mux  | 685152 B  | 1557216 B  |  80240 B  | 125480 B  |
-| HttpRouter   |__26232 B__| __44344 B__| __3144 B__| __5792 B__|
-| HttpTreeMux  |  75624 B  |   81408 B  |   7712 B  |   7616 B  |
-| Kocha        | 130336 B  |  811744 B  | 139968 B  | 191632 B  |
-| Martini      | 312592 B  |  579472 B  |  27520 B  |  50608 B  |
-| Pat          |__21272 B__| __18968 B__| __1448 B__| __2360 B__|
-| TigerTonic   |  85264 B  |   99392 B  |  10576 B  |  11008 B  |
-| Traffic      | 649568 B  | 1124704 B  |  57984 B  |  98168 B  |
+| Router       |      Static |      GitHub |    Google+ |      Parse |
+| :----------- | ----------: | ----------: | ---------: | ---------: |
+| HttpServeMux | __18064 B__ |           - |          - |          - |
+| Beego        |     79472 B |    497248 B |    26480 B |    38768 B |
+| Denco        |     44752 B |    107632 B |    54896 B |    36368 B |
+| Gocraft Web  |     57976 B |     95736 B |     8024 B |    13120 B |
+| Goji         |     32400 B | __58424 B__ | __3392 B__ | __6704 B__ |
+| Go-Json-Rest |    152608 B |    148352 B |    11696 B |    13712 B |
+| Gorilla Mux  |    685152 B |   1557216 B |    80240 B |   125480 B |
+| HttpRouter   | __26232 B__ | __44344 B__ | __3144 B__ | __5792 B__ |
+| HttpTreeMux  |     75624 B |     81408 B |     7712 B |     7616 B |
+| Kocha        |    130336 B |    811744 B |   139968 B |   191632 B |
+| Martini      |    312592 B |    579472 B |    27520 B |    50608 B |
+| Pat          | __21272 B__ | __18968 B__ | __1448 B__ | __2360 B__ |
+| TigerTonic   |     85264 B |     99392 B |    10576 B |    11008 B |
+| Traffic      |    649568 B |   1124704 B |    57984 B |    98168 B |
 
-The first place goes to [Pat](https://github.com/bmizerany/pat), followed by [HttpRouter](https://github.com/julienschmidt/httprouter) and [Goji](https://github.com/zenazn/goji/). Now, before everyone starts reading the documentation of Pat, `[SPOILER]` this low memory consumption comes at the price of relatively bad routing performance. The routing structure of Pat is simple - probably too simple. `[/SPOILER]`.
+The first place goes to [Pat](https://github.com/bmizerany/pat), followed by
+[HttpRouter](https://github.com/julienschmidt/httprouter) and
+[Goji](https://github.com/zenazn/goji/). Now, before everyone starts reading the
+documentation of Pat, `[SPOILER]` this low memory consumption comes at the price
+of relatively bad routing performance. The routing structure of Pat is simple -
+probably too simple. `[/SPOILER]`.
 
-Moreover main memory is cheap and usually not a scarce resource. As long as the router doesn't require Megabytes of memory, it should be no deal breaker. But it gives us a first hint how efficient or wasteful a router works.
-
+Moreover main memory is cheap and usually not a scarce resource. As long as the
+router doesn't require Megabytes of memory, it should be no deal breaker. But it
+gives us a first hint how efficient or wasteful a router works.
 
 ### Static Routes
 
-The `Static` benchmark is not really a clone of a real-world API. It is just a collection of random static paths inspired by the structure of the Go directory. It might not be a realistic URL-structure.
+The `Static` benchmark is not really a clone of a real-world API. It is just a
+collection of random static paths inspired by the structure of the Go directory.
+It might not be a realistic URL-structure.
 
-The only intention of this benchmark is to allow a comparison with the default router of Go's net/http package, [http.ServeMux](http://golang.org/pkg/net/http/#ServeMux), which is limited to static routes and does not support parameters in the route pattern.
+The only intention of this benchmark is to allow a comparison with the default
+router of Go's net/http package,
+[http.ServeMux](http://golang.org/pkg/net/http/#ServeMux), which is limited to
+static routes and does not support parameters in the route pattern.
 
-In the `StaticAll` benchmark each of 157 URLs is called once per repetition (op, *operation*). If you are unfamiliar with the `go test -bench` tool, the first number is the number of repetitions the `go test` tool made, to get a test running long enough for measurements. The second column shows the time in nanoseconds that a single repetition takes. The third number is the amount of heap memory allocated in bytes, the last one the average number of allocations made per repetition.
+In the `StaticAll` benchmark each of 157 URLs is called once per repetition (op,
+*operation*). If you are unfamiliar with the `go test -bench` tool, the first
+number is the number of repetitions the `go test` tool made, to get a test
+running long enough for measurements. The second column shows the time in
+nanoseconds that a single repetition takes. The third number is the amount of
+heap memory allocated in bytes, the last one the average number of allocations
+made per repetition.
 
-The logs below show, that http.ServeMux has only medium performance, compared to more feature-rich routers. The fastest router only needs 1.8% of the time http.ServeMux needs.
+The logs below show, that http.ServeMux has only medium performance, compared to
+more feature-rich routers. The fastest router only needs 1.8% of the time
+http.ServeMux needs.
 
-[HttpRouter](https://github.com/julienschmidt/httprouter) was the first router (I know of) that managed to serve all the static URLs without a single heap allocation. Since [the first run of this benchmark](https://github.com/julienschmidt/go-http-routing-benchmark/blob/0eb78904be13aee7a1e9f8943386f7c26b9d9d79/README.md) more routers followed this trend and were optimized in the same way.
+[HttpRouter](https://github.com/julienschmidt/httprouter) was the first router
+(I know of) that managed to serve all the static URLs without a single heap
+allocation.
 
-```
+Since [the first run of this
+benchmark](https://github.com/julienschmidt/go-http-routing-benchmark/blob/0eb78904be13aee7a1e9f8943386f7c26b9d9d79/README.md)
+more routers followed this trend and were optimized in the same way.
+
+```none
 BenchmarkHttpServeMux_StaticAll         5000     706222 ns/op          96 B/op        6 allocs/op
 
 BenchmarkBeego_StaticAll                2000    1408954 ns/op      482433 B/op    14088 allocs/op
@@ -114,8 +157,11 @@ BenchmarkTraffic_StaticAll               500    7230129 ns/op     3763731 B/op  
 
 The following benchmarks measure the cost of some very basic operations.
 
-In the first benchmark, only a single route, containing a parameter, is loaded into the routers. Then a request for a URL matching this pattern is made and the router has to call the respective registered handler function. End.
-```
+In the first benchmark, only a single route, containing a parameter, is loaded
+into the routers. Then a request for a URL matching this pattern is made and the
+router has to call the respective registered handler function. End.
+
+```none
 BenchmarkBeego_Param                  500000       5495 ns/op        1165 B/op       14 allocs/op
 BenchmarkDenco_Param                 5000000        312 ns/op          50 B/op        2 allocs/op
 BenchmarkGocraftWeb_Param            1000000       1440 ns/op         684 B/op        9 allocs/op
@@ -131,8 +177,13 @@ BenchmarkTigerTonic_Param            1000000       2766 ns/op        1015 B/op  
 BenchmarkTraffic_Param                500000       4440 ns/op        2013 B/op       22 allocs/op
 ```
 
-Same as before, but now with multiple parameters, all in the same single route. The intention is to see how the routers scale with the number of parameters. The values of the parameters must be passed to the handler function somehow, which requires allocations. Let's see how clever the routers solve this task with a route containing 5 and 20 parameters:
-```
+Same as before, but now with multiple parameters, all in the same single route.
+The intention is to see how the routers scale with the number of parameters. The
+values of the parameters must be passed to the handler function somehow, which
+requires allocations. Let's see how clever the routers solve this task with a
+route containing 5 and 20 parameters:
+
+```none
 BenchmarkBeego_Param5                 100000      18473 ns/op        1291 B/op       14 allocs/op
 BenchmarkDenco_Param5                2000000        982 ns/op         405 B/op        5 allocs/op
 BenchmarkGocraftWeb_Param5           1000000       2218 ns/op         957 B/op       12 allocs/op
@@ -162,8 +213,12 @@ BenchmarkTigerTonic_Param20            50000      36825 ns/op       10710 B/op  
 BenchmarkTraffic_Param20              100000      22605 ns/op        8077 B/op       49 allocs/op
 ```
 
-Now let's see how expensive it is to access a parameter. The handler function reads the value (by the name of the parameter, e.g. with a map lookup; depends on the router) and writes it to our [web scale storage](https://www.youtube.com/watch?v=b2F-DItXtZs) (`/dev/null`).
-```
+Now let's see how expensive it is to access a parameter. The handler function
+reads the value (by the name of the parameter, e.g. with a map lookup; depends
+on the router) and writes it to our [web scale
+storage](https://www.youtube.com/watch?v=b2F-DItXtZs) (`/dev/null`).
+
+```none
 BenchmarkBeego_ParamWrite             500000       6604 ns/op        1602 B/op       18 allocs/op
 BenchmarkDenco_ParamWrite            5000000        377 ns/op          50 B/op        2 allocs/op
 BenchmarkGocraftWeb_ParamWrite       1000000       1590 ns/op         693 B/op        9 allocs/op
@@ -181,13 +236,26 @@ BenchmarkTraffic_ParamWrite           500000       5855 ns/op        2435 B/op  
 
 ### [Parse.com](https://parse.com/docs/rest#summary)
 
-Enough of the micro benchmark stuff. Let's play a bit with real APIs. In the first set of benchmarks, we use a clone of the structure of [Parse](https://parse.com)'s decent medium-sized REST API, consisting of 26 routes.
+Enough of the micro benchmark stuff. Let's play a bit with real APIs. In the
+first set of benchmarks, we use a clone of the structure of
+[Parse](https://parse.com)'s decent medium-sized REST API, consisting of 26
+routes.
 
-The tasks are 1.) routing a static URL (no parameters), 2.) routing a URL containing 1 parameter, 3.) same with 2 parameters, 4.) route all of the routes once (like the StaticAll benchmark, but the routes now contain parameters).
+The tasks are
 
-Worth noting is, that the requested route might be a good case for some routing algorithms, while it is a bad case for another algorithm. The values might vary slightly depending on the selected route.
+1.) routing a static URL (no parameters),
 
-```
+2.) routing a URL containing 1 parameter,
+
+3.) same with 2 parameters,
+
+4.) route all of the routes once (like the StaticAll benchmark, but the routes now contain parameters).
+
+Worth noting is, that the requested route might be a good case for some routing
+algorithms, while it is a bad case for another algorithm. The values might vary
+slightly depending on the selected route.
+
+```none
 BenchmarkBeego_ParseStatic            500000       3461 ns/op        1247 B/op       15 allocs/op
 BenchmarkDenco_ParseStatic          50000000         42.6 ns/op         0 B/op        0 allocs/op
 BenchmarkGocraftWeb_ParseStatic      2000000        889 ns/op         328 B/op        6 allocs/op
@@ -245,12 +313,12 @@ BenchmarkTigerTonic_ParseAll           50000      67208 ns/op       20547 B/op  
 BenchmarkTraffic_ParseAll              10000     164938 ns/op       70161 B/op      743 allocs/op
 ```
 
-
 ### [GitHub](http://developer.github.com/v3/)
 
-The GitHub API is rather large, consisting of 203 routes. The tasks are basically the same as in the benchmarks before.
+The GitHub API is rather large, consisting of 203 routes. The tasks are
+basically the same as in the benchmarks before.
 
-```
+```none
 BenchmarkBeego_GithubStatic           500000       3880 ns/op        1148 B/op       31 allocs/op
 BenchmarkDenco_GithubStatic         50000000         60.5 ns/op         0 B/op        0 allocs/op
 BenchmarkGocraftWeb_GithubStatic     2000000        933 ns/op         328 B/op        6 allocs/op
@@ -296,7 +364,8 @@ BenchmarkTraffic_GithubAll               200    8087393 ns/op     3143039 B/op  
 
 ### [Google+](https://developers.google.com/+/api/latest/)
 
-Last but not least the Google+ API, consisting of 13 routes. In reality this is just a subset of a much larger API.
+Last but not least the Google+ API, consisting of 13 routes. In reality this is
+just a subset of a much larger API.
 
 ```
 BenchmarkBeego_GPlusStatic           1000000       2321 ns/op         808 B/op       11 allocs/op
@@ -356,44 +425,69 @@ BenchmarkTigerTonic_GPlusAll           50000      49864 ns/op       15160 B/op  
 BenchmarkTraffic_GPlusAll              10000     108007 ns/op       41779 B/op      430 allocs/op
 ```
 
-
 ## Conclusions
-First of all, there is no reason to use net/http's default [ServeMux](http://golang.org/pkg/net/http/#ServeMux), which is very limited and does not have especially good performance. There are enough alternatives coming in every flavor, choose the one you like best.
 
-Secondly, the broad range of functions of some of the frameworks comes at a high price in terms of performance. For example Martini has great flexibility, but very bad performance. Martini has the worst performance of all tested routers in a lot of the benchmarks. Beego seems to have some scalability problems and easily defeats Martini with even worse performance, when the number of parameters or routes is high. I really hope, that the routing of these packages can be optimized. I think the Go-ecosystem needs great feature-rich frameworks like these.
+First of all, there is no reason to use net/http's default
+[ServeMux](http://golang.org/pkg/net/http/#ServeMux), which is very limited and
+does not have especially good performance. There are enough alternatives coming
+in every flavor, choose the one you like best.
+
+Secondly, the broad range of functions of some of the frameworks comes at a high
+price in terms of performance. For example Martini has great flexibility, but
+very bad performance. Martini has the worst performance of all tested routers in
+a lot of the benchmarks. Beego seems to have some scalability problems and
+easily defeats Martini with even worse performance, when the number of
+parameters or routes is high. I really hope, that the routing of these packages
+can be optimized. I think the Go-ecosystem needs great feature-rich frameworks
+like these.
 
 Last but not least, we have to determine the performance champion.
 
-Denco and its predecessor Kocha-urlrouter seem to have great performance, but are not convenient to use as a router for the net/http package. A lot of extra work is necessary to use it as a http.Handler. [The README of Denco claims](https://github.com/naoina/denco/blob/b03dbb499269a597afd0db715d408ebba1329d04/README.md), that the package is not intended as a replacement for [http.ServeMux](http://golang.org/pkg/net/http/#ServeMux).
+Denco and its predecessor Kocha-urlrouter seem to have great performance, but
+are not convenient to use as a router for the net/http package. A lot of extra
+work is necessary to use it as a http.Handler. [The README of Denco
+claims](https://github.com/naoina/denco/blob/b03dbb499269a597afd0db715d408ebba1329d04/README.md),
+that the package is not intended as a replacement for
+[http.ServeMux](http://golang.org/pkg/net/http/#ServeMux).
 
-[Goji](https://github.com/zenazn/goji/) looks very decent. It has great performance while also having a great range of features, more than any other router / framework in the top group.
+[Goji](https://github.com/zenazn/goji/) looks very decent. It has great
+performance while also having a great range of features, more than any other
+router / framework in the top group.
 
-Currently no router can beat the performance of the [HttpRouter](https://github.com/julienschmidt/httprouter) package, which currently dominates nearly all benchmarks.
+Currently no router can beat the performance of the
+[HttpRouter](https://github.com/julienschmidt/httprouter) package, which
+currently dominates nearly all benchmarks.
 
-In the end, performance can not be the (only) criterion for choosing a router. Play around a bit with some of the routers, and choose the one you like best.
+In the end, performance can not be the (only) criterion for choosing a router.
+Play around a bit with some of the routers, and choose the one you like best.
 
 ## Usage
 
-If you'd like to run these benchmarks locally, you'll need to install the package first:
+If you'd like to run these benchmarks locally, you'll need to install the
+package first:
 
 ```bash
 go get github.com/julienschmidt/go-http-routing-benchmark
 ```
-This may take a while due to the large number of dependencies that need to be downloaded. Once that command has finished you can run the full set of benchmarks like this:
+
+This may take a while due to the large number of dependencies that need to be
+downloaded. Once that command has finished you can run the full set of
+benchmarks like this:
 
 ```bash
 cd $GOPATH/src/github.com/julienschmidt/go-http-routing-benchmark
 go test -bench=.
 ```
 
-> **Note:** If you run the tests and it SIGQUIT's make the go test timeout longer (#44)
->
-```
+> __Note:__ If you run the tests and it SIGQUIT's make the go test timeout longer (#44)
+
+```bash
 go test -timeout=2h -bench=.
 ```
 
+You can bench specific frameworks only by using a regular expression as the
+value of the `bench` parameter:
 
-You can bench specific frameworks only by using a regular expression as the value of the `bench` parameter:
 ```bash
 go test -bench="Martini|Gin|HttpMux"
 ```
